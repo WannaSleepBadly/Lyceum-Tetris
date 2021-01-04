@@ -1,4 +1,5 @@
 import pygame
+from copy import deepcopy
 
 
 width, height = 10, 15
@@ -24,6 +25,13 @@ figures = [[pygame.Rect(x + width // 2, y + 1, 1, 1) for x, y in figure_position
 figure_rect = pygame.Rect(0, 0, tile - 2, tile - 2)  # Плитка
 figure = figures[4]  # Текущая фигура
 
+
+def check_borders():  # Проверка границ при движении фигуры влево-вправо
+    if figure[i].x < 0 or figure[i].x > width - 1:
+        return False
+    return True
+
+
 while True:
     game_sc.fill((0, 0, 0))
     change_x = 0  # Изменение х координаты фигуры на столько-то клеток
@@ -37,8 +45,12 @@ while True:
             if event.key == pygame.K_RIGHT:
                 change_x = 1  # На 1 клетку вправо
 
+        old_figure = deepcopy(figure)  # Копия на случай, если фигура будет выходить за границы
         for i in range(4):  # Непосредственно изменение координат каждой клетки фигуры
             figure[i].x += change_x
+            if not check_borders():
+                figure = old_figure
+                break
 
     [pygame.draw.rect(game_sc, (255, 255, 255), i_rect, 1) for i_rect in grid]  # Отрисовка доски
 
