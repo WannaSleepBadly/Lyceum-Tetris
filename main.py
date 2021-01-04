@@ -1,5 +1,6 @@
 import pygame
 from copy import deepcopy
+from random import choice
 
 
 width, height = 10, 15
@@ -13,6 +14,13 @@ clock = pygame.time.Clock()
 
 grid = [pygame.Rect(x * tile, y * tile, tile, tile) for x in range(width) for y in range(height)]  # Доска
 
+colors = [(255, 181, 232), (255, 153, 153), (255, 102, 102), (255, 102, 153),  # Цвета для фигур
+          (255, 0, 102), (255, 204, 255), (255, 0, 255), (204, 102, 255), (204, 0, 255),
+          (153, 51, 255), (153, 102, 255), (204, 204, 255), (102, 0, 255), (51, 51, 255),
+          (51, 102, 255), (0, 102, 255), (153, 204, 255), (0, 204, 255),(204, 255, 255),
+          (102, 255, 255), (153, 255, 204), (51, 255, 204)]
+color = choice(colors)
+
 figure_positions = [  # координаты плиток, из которых состоят фигуры
     [(0, 0), (-2, 0), (-1, 0), (1, 0)],  # (на чертеже) Красная линия
     [(0, 0), (-1, -1), (-1, 0), (0, -1)],  # (на чертеже) Оранжевый квадрат
@@ -21,7 +29,8 @@ figure_positions = [  # координаты плиток, из которых �
     [(0, 0), (0, -1), (-1, 0), (0, 1)]  # (на чертеже) Голубая абракадабра
 ]
 
-figures = [[pygame.Rect(x + width // 2, y + 1, 1, 1) for x, y in figure_position] for figure_position in figure_positions]  # Сами фигуры
+figures = [[pygame.Rect(x + width // 2, y + 1, 1, 1) for x, y in figure_position]
+           for figure_position in figure_positions]  # Сами фигуры
 figure_rect = pygame.Rect(0, 0, tile - 2, tile - 2)  # Плитка
 figure = figures[4]  # Текущая фигура
 
@@ -46,7 +55,7 @@ while True:
                 change_x = 1  # На 1 клетку вправо
 
         old_figure = deepcopy(figure)  # Копия на случай, если фигура будет выходить за границы
-        for i in range(4):  # Непосредственно изменение координат каждой клетки фигуры
+        for i in range(4):  # Непосредственно изменение координат каждой плитки фигуры
             figure[i].x += change_x
             if not check_borders():
                 figure = old_figure
@@ -57,7 +66,7 @@ while True:
     for i in range(4):  # Отрисовка фигуры
         figure_rect.x = figure[i].x * tile
         figure_rect.y = figure[i].y * tile
-        pygame.draw.rect(game_sc, (255, 255, 255), figure_rect)
+        pygame.draw.rect(game_sc, color, figure_rect)
 
     pygame.display.flip()
     clock.tick(fps)
