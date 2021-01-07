@@ -72,11 +72,21 @@ while True:
         for i in range(4):  # Изменение у коордиаты всех плиток
             figure[i].y += 1
             if not check_borders():
-                for i in range(4):
-                    field[old_figure[i].y][old_figure[i].x] = color  # Отмечаем на поле, что
+                for c in range(4):
+                    field[old_figure[c].y][old_figure[c].x] = color  # Отмечаем на поле, что
                     # данная клетка занята таким цветом
                 figure, color = deepcopy(choice(figures)), choice(colors)
                 break
+
+    line = height - 1  # Последняя строка поля
+    for i in range(height - 1, -1, -1):  # Проходимся по всему полю
+        full_count = 0  # Счетчик заполненных плиток
+        for j in range(width):
+            if field[i][j] != 0:
+                full_count += 1
+            field[line][j] = field[i][j]  # Заполненная линия заменяется на ту, что над ней
+        if full_count < width:
+            line -= 1
 
     [pygame.draw.rect(game_sc, (255, 255, 255), i_rect, 1) for i_rect in grid]  # Отрисовка доски
 
@@ -91,5 +101,6 @@ while True:
                 figure_rect.x = x * tile
                 figure_rect.y = y * tile
                 pygame.draw.rect(game_sc, col, figure_rect)
+
     pygame.display.flip()
     clock.tick(fps)
