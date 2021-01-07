@@ -90,6 +90,6 @@ while True:
             if col != 0:
                 figure_rect.x = x * tile
                 figure_rect.y = y * tile
-                pygame.draw.rect(game_sc, color, figure_rect)
+                pygame.draw.rect(game_sc, col, figure_rect)
     pygame.display.flip()
     clock.tick(fps)
