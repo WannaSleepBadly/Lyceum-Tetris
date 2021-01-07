@@ -32,15 +32,15 @@ figure_positions = [  # координаты плиток, из которых �
 figures = [[pygame.Rect(x + width // 2, y + 1, 1, 1) for x, y in figure_position]
            for figure_position in figure_positions]  # Сами фигуры
 figure_rect = pygame.Rect(0, 0, tile - 2, tile - 2)  # Плитка
-figure = choice(figures)  # Текущая фигура
+figure = deepcopy(choice(figures))  # Текущая фигура
+field = [[0 for _ in range(width)] for i in range(height)]  # Карта поля
 
 count, count_speed = 0, 60  # Счетчик и скорость, с которой он изменяется(для падения)
 
 
 def check_borders():  # Проверка границ
-    if figure[i].x < 0 or figure[i].x > width - 1:  # при движении фигуры влево-вправо
-        return False
-    if figure[i].y > height - 1:  # при падении
+    if figure[i].x < 0 or figure[i].x > width - 1 or \
+            figure[i].y > height - 1 or field[figure[i].y][figure[i].x] != 0:
         return False
     return True
 
@@ -62,17 +62,20 @@ while True:
     for i in range(4):  # Непосредственно изменение х координаты каждой плитки фигуры
         figure[i].x += change_x
         if not check_borders():
-            figure = old_figure
+            figure = deepcopy(old_figure)
             break
 
-    old_figure = deepcopy(figure)  # Обновление копии
     count += count_speed  # Обновление счетчика
     if count > 2000:  # Задаем скорость падения
         count = 0
-        for i in range(4):  # Изменение у координаты всех плиток
+        old_figure = deepcopy(figure)
+        for i in range(4):  # Изменение у коордиаты всех плиток
             figure[i].y += 1
-            if not check_borders():  # !! Фигуру можно двигать по полу вправо-влево пока что
-                figure = old_figure
+            if not check_borders():
+                for i in range(4):
+                    field[old_figure[i].y][old_figure[i].x] = color  # Отмечаем на поле, что
+                    # данная клетка занята таким цветом
+                figure, color = deepcopy(choice(figures)), choice(colors)
                 break
 
     [pygame.draw.rect(game_sc, (255, 255, 255), i_rect, 1) for i_rect in grid]  # Отрисовка доски
@@ -82,5 +85,11 @@ while True:
         figure_rect.y = figure[i].y * tile
         pygame.draw.rect(game_sc, color, figure_rect)
 
+    for y, raw in enumerate(field):  # Отрисовка тех фигур, которые уже упали на доску(поля)
+        for x, col in enumerate(raw):
+            if col != 0:
+                figure_rect.x = x * tile
+                figure_rect.y = y * tile
+                pygame.draw.rect(game_sc, color, figure_rect)
     pygame.display.flip()
     clock.tick(fps)
