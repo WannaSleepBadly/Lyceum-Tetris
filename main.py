@@ -85,7 +85,7 @@ while True:
         figure_rect.y = figure[i].y * tile
         pygame.draw.rect(game_sc, color, figure_rect)
 
-    for y, raw in enumerate(field):  # Отрисовка тех фигур, которые уже упали на доску(поля)
+    for y, raw in enumerate(field):  # Отрисовка тех фигур, которые уже упали на доску (поля)
         for x, col in enumerate(raw):
             if col != 0:
                 figure_rect.x = x * tile
