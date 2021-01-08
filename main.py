@@ -1,4 +1,3 @@
-import os
 import sys
 import pygame
 from copy import deepcopy
@@ -15,6 +14,7 @@ game_background = pygame.image.load('image/background_4.jpg')
 background = pygame.image.load('image/background_2.jpg')
 pygame.init()
 pygame.font.init()
+pygame.display.set_caption('Пастельный Тетрис(Поставьте 100 баллов, пожалуйста)')
 fancy_font = pygame.font.SysFont('Monotype Corsiva', 120)
 small_fancy_font = pygame.font.SysFont('Monotype Corsiva', 100)
 show_record, show_score = small_fancy_font.render('Record:', False, (255, 255, 255)),\
@@ -50,6 +50,37 @@ field = [[0 for _ in range(width)] for i in range(height)]  # Карта пол�
 count, count_speed = 0, 60  # Счетчик и скорость, с которой он изменяется(для падения)
 
 
+def start_screen():  # Заставка
+    intro_text = ["Добро пожаловать в TETRIS!", "", "",
+                  "Управление",
+                  "→ и ← для перемещения фигуры вправо и влево,",
+                  "↑ для вращения и ↓ для ускоренного падения", "", "",
+                  "Для начала игры нажмите любую клавишу!"]
+    fon = pygame.transform.scale(pygame.image.load('image/background_1.png'), res)
+    screen.blit(fon, (0, 0))
+    text_coord = 50
+    for line in intro_text:
+        font = pygame.font.SysFont('Monotype Corsiva', 50)
+        string_rendered = font.render(line, True, (153, 50, 204))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return  # начинаем игру
+        pygame.display.flip()
+        clock.tick(fps)
+
+
 def check_borders():  # Проверка границ
     if figure[i].x < 0 or figure[i].x > width - 1 or \
             figure[i].y > height - 1 or field[figure[i].y][figure[i].x] != 0:
@@ -57,15 +88,7 @@ def check_borders():  # Проверка границ
     return True
 
 
-def load_image(name):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
-
-
+start_screen()
 while True:
     screen.blit(background, (0, 0))
     screen.blit(game_screen, (10, 10))
