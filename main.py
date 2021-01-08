@@ -9,11 +9,17 @@ width, height = 10, 15
 tile = 45
 game_resolution = width * tile, height * tile  # Игровое разрешение
 fps = 60
-res = 1000, 700
+res = 950, 700
 
 game_background = pygame.image.load('image/background_4.jpg')
 background = pygame.image.load('image/background_2.jpg')
 pygame.init()
+pygame.font.init()
+fancy_font = pygame.font.SysFont('Monotype Corsiva', 120)
+small_fancy_font = pygame.font.SysFont('Monotype Corsiva', 100)
+show_record, show_score = small_fancy_font.render('Record:', False, (255, 255, 255)),\
+                          small_fancy_font.render('Score:', False, (255, 255, 255))
+title = fancy_font.render('TETRIS', False, (255, 255, 255))
 screen = pygame.display.set_mode(res)
 game_screen = pygame.Surface(game_resolution)
 clock = pygame.time.Clock()
@@ -62,8 +68,11 @@ def load_image(name):
 
 while True:
     screen.blit(background, (0, 0))
-    screen.blit(game_screen, (20, 20))
+    screen.blit(game_screen, (10, 10))
     game_screen.blit(game_background, (0, 0))
+    screen.blit(title, (515, 10))
+    screen.blit(show_score, (510, 275))
+    screen.blit(show_record, (510, 470))
     change_x = 0  # Изменение х координаты фигуры на столько-то клеток
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
