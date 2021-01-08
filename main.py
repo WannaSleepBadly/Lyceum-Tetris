@@ -1,3 +1,5 @@
+import os
+import sys
 import pygame
 from copy import deepcopy
 from random import choice
@@ -7,10 +9,13 @@ width, height = 10, 15
 tile = 45
 game_resolution = width * tile, height * tile  # Игровое разрешение
 fps = 60
-background = pygame.image.load('image/background_4.jpg')
+res = 1000, 700
 
+game_background = pygame.image.load('image/background_4.jpg')
+background = pygame.image.load('image/background_2.jpg')
 pygame.init()
-screen = pygame.display.set_mode(game_resolution)
+screen = pygame.display.set_mode(res)
+game_screen = pygame.Surface(game_resolution)
 clock = pygame.time.Clock()
 
 grid = [pygame.Rect(x * tile, y * tile, tile, tile) for x in range(width) for y in range(height)]  # Доска
@@ -46,10 +51,20 @@ def check_borders():  # Проверка границ
     return True
 
 
+def load_image(name):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
 while True:
     screen.blit(background, (0, 0))
+    screen.blit(game_screen, (20, 20))
+    game_screen.blit(game_background, (0, 0))
     change_x = 0  # Изменение х координаты фигуры на столько-то клеток
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
@@ -58,6 +73,10 @@ while True:
                 change_x = -1  # На 1 клетку влево
             if event.key == pygame.K_RIGHT:
                 change_x = 1  # На 1 клетку вправо
+            if event.key == pygame.K_DOWN:
+                pass
+            if event.key == pygame.K_UP:
+                pass
 
     old_figure = deepcopy(figure)  # Копия на случай, если фигура будет выходить за границы
     for i in range(4):  # Непосредственно изменение х координаты каждой плитки фигуры
@@ -89,19 +108,19 @@ while True:
         if full_count < width:
             line -= 1
 
-    [pygame.draw.rect(screen, (255, 255, 255), i_rect, 1) for i_rect in grid]  # Отрисовка доски
+    [pygame.draw.rect(game_screen, (255, 255, 255), i_rect, 1) for i_rect in grid]  # Отрисовка доски
 
     for i in range(4):  # Отрисовка фигуры
         figure_rect.x = figure[i].x * tile
         figure_rect.y = figure[i].y * tile
-        pygame.draw.rect(screen, color, figure_rect)
+        pygame.draw.rect(game_screen, color, figure_rect)
 
     for y, raw in enumerate(field):  # Отрисовка тех фигур, которые уже упали на доску (поля)
         for x, col in enumerate(raw):
             if col != 0:
                 figure_rect.x = x * tile
                 figure_rect.y = y * tile
-                pygame.draw.rect(screen, col, figure_rect)
+                pygame.draw.rect(game_screen, col, figure_rect)
 
     pygame.display.flip()
     clock.tick(fps)
