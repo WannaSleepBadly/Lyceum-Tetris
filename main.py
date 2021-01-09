@@ -17,8 +17,8 @@ pygame.font.init()
 pygame.display.set_caption('Пастельный Тетрис')
 fancy_font = pygame.font.SysFont('Monotype Corsiva', 120)
 small_fancy_font = pygame.font.SysFont('Monotype Corsiva', 100)
-show_record, show_score = small_fancy_font.render('Record:', False, (255, 255, 255)),\
-                          small_fancy_font.render('Score:', False, (255, 255, 255))
+show_record_text, show_score_text = small_fancy_font.render('Record:', False, (255, 255, 255)), \
+                                    small_fancy_font.render('Score:', False, (255, 255, 255))
 title = fancy_font.render('TETRIS', False, (255, 255, 255))
 screen = pygame.display.set_mode(res)
 game_screen = pygame.Surface(game_resolution)
@@ -47,7 +47,17 @@ figure_rect = pygame.Rect(0, 0, tile - 2, tile - 2)  # Плитка
 figure = deepcopy(choice(figures))  # Текущая фигура
 field = [[0 for _ in range(width)] for i in range(height)]  # Карта поля
 
-count, count_speed = 0, 60  # Счетчик и скорость, с которой он изменяется(для падения)
+count, count_speed, limit = 0, 60, 2000  # Счетчик, скорость, с которой он изменяется и предел(для падения)
+
+
+def get_record():
+    global record
+    try:
+        with open('records.txt', 'r', encoding='utf-8') as f:
+            record = int(f.readline())
+    except FileNotFoundError:
+        with open('records.txt', 'w', encoding='utf-8') as f:
+            f.write('0')
 
 
 def start_screen():  # Заставка
@@ -59,9 +69,9 @@ def start_screen():  # Заставка
     fon = pygame.transform.scale(pygame.image.load('image/background_1.png'), res)
     screen.blit(fon, (0, 0))
     text_coord = 50
-    for line in intro_text:
+    for ss_line in intro_text:
         font = pygame.font.SysFont('Monotype Corsiva', 50)
-        string_rendered = font.render(line, True, (153, 50, 204))
+        string_rendered = font.render(ss_line, True, (153, 50, 204))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
@@ -70,12 +80,12 @@ def start_screen():  # Заставка
         screen.blit(string_rendered, intro_rect)
 
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ss_event in pygame.event.get():
+            if ss_event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
+            elif ss_event.type == pygame.KEYDOWN or \
+                    ss_event.type == pygame.MOUSEBUTTONDOWN:
                 return  # начинаем игру
         pygame.display.flip()
         clock.tick(fps)
@@ -88,14 +98,24 @@ def check_borders():  # Проверка границ
     return True
 
 
+def update_record():
+    global record
+    if score > record:  # Обновление рекорда
+        with open('records.txt', 'w', encoding='utf-8') as f:
+            f.write(str(score))
+        record = score
+
+
+score, record = 0, 0
+get_record()
 start_screen()
 while True:
     screen.blit(background, (0, 0))
     screen.blit(game_screen, (10, 10))
     game_screen.blit(game_background, (0, 0))
     screen.blit(title, (515, 10))
-    screen.blit(show_score, (510, 275))
-    screen.blit(show_record, (510, 470))
+    screen.blit(show_score_text, (510, 275))
+    screen.blit(show_record_text, (510, 400))
     change_x = 0  # Изменение х координаты фигуры на столько-то клеток
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -106,7 +126,7 @@ while True:
             if event.key == pygame.K_RIGHT:
                 change_x = 1  # На 1 клетку вправо
             if event.key == pygame.K_DOWN:
-                pass
+                limit = 70
             if event.key == pygame.K_UP:
                 pass
 
@@ -118,7 +138,7 @@ while True:
             break
 
     count += count_speed  # Обновление счетчика
-    if count > 2000:  # Задаем скорость падения
+    if count > limit:  # Задаем скорость падения
         count = 0
         old_figure = deepcopy(figure)
         for i in range(4):  # Изменение у коордиаты всех плиток
@@ -127,6 +147,7 @@ while True:
                 for c in range(4):
                     field[old_figure[c].y][old_figure[c].x] = color  # Отмечаем на поле, что
                     # данная клетка занята таким цветом
+                limit = 2000
                 figure, color = deepcopy(choice(figures)), choice(colors)
                 break
 
@@ -139,6 +160,8 @@ while True:
             field[line][j] = field[i][j]  # Заполненная линия заменяется на ту, что над ней
         if full_count < width:
             line -= 1
+        else:
+            score += 10
 
     [pygame.draw.rect(game_screen, (255, 255, 255), i_rect, 1) for i_rect in grid]  # Отрисовка доски
 
@@ -154,18 +177,23 @@ while True:
                 figure_rect.y = y * tile
                 pygame.draw.rect(game_screen, col, figure_rect)
 
+    show_score = small_fancy_font.render(str(score), False, (255, 255, 255))  # Показ счета
+    screen.blit(show_score, (720, 280))
+    update_record()
+    show_record = small_fancy_font.render(str(record), False, (255, 255, 255))  # Показ рекорда
+    screen.blit(show_record, (775, 405))
+
     for i in range(width):
         if field[0][i] != 0:  # Конец игры
             field = [[0 for _ in range(width)] for i in range(height)]  # Обнуление поля
             count = 0  # Обнуление "падения"
+            update_record()
+            score = 0  # Обнуление счета
             for rect in grid:  # Заполнение доски белыми квадратиками
                 pygame.draw.rect(game_screen, (255, 255, 255), rect)
                 screen.blit(game_screen, (10, 10))
                 pygame.display.flip()
                 clock.tick(200)
 
-
     pygame.display.flip()
     clock.tick(fps)
-
-pygame.quit()
