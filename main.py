@@ -14,7 +14,7 @@ game_background = pygame.image.load('image/background_4.jpg')
 background = pygame.image.load('image/background_2.jpg')
 pygame.init()
 pygame.font.init()
-pygame.display.set_caption('Пастельный Тетрис(Поставьте 100 баллов, пожалуйста)')
+pygame.display.set_caption('Пастельный Тетрис')
 fancy_font = pygame.font.SysFont('Monotype Corsiva', 120)
 small_fancy_font = pygame.font.SysFont('Monotype Corsiva', 100)
 show_record, show_score = small_fancy_font.render('Record:', False, (255, 255, 255)),\
@@ -154,5 +154,18 @@ while True:
                 figure_rect.y = y * tile
                 pygame.draw.rect(game_screen, col, figure_rect)
 
+    for i in range(width):
+        if field[0][i] != 0:  # Конец игры
+            field = [[0 for _ in range(width)] for i in range(height)]  # Обнуление поля
+            count = 0  # Обнуление "падения"
+            for rect in grid:  # Заполнение доски белыми квадратиками
+                pygame.draw.rect(game_screen, (255, 255, 255), rect)
+                screen.blit(game_screen, (10, 10))
+                pygame.display.flip()
+                clock.tick(200)
+
+
     pygame.display.flip()
     clock.tick(fps)
+
+pygame.quit()
