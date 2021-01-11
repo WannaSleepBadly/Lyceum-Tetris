@@ -3,7 +3,7 @@ import sys
 import pygame
 from copy import deepcopy
 from random import choice
-import os
+# import os  Нужно для музыки
 
 
 width, height = 10, 15
@@ -15,8 +15,8 @@ res = 950, 700
 game_background = pygame.image.load('image/background_4.jpg')
 background = pygame.image.load('image/background_2.jpg')
 pygame.init()
-#pygame.mixer.music.load('Wii-Shop-Channel.ogg')
-#pygame.mixer.music.play(loops=-1)
+#  pygame.mixer.music.load('Wii-Shop-Channel.ogg')  Не работает пока что, F
+#  pygame.mixer.music.play(loops=-1)
 pygame.font.init()
 pygame.display.set_caption('Пастельный Тетрис')
 fancy_font = pygame.font.SysFont('Monotype Corsiva', 120)
@@ -94,6 +94,40 @@ def start_screen():  # Заставка
                 sys.exit()
             elif ss_event.type == pygame.KEYDOWN or \
                     ss_event.type == pygame.MOUSEBUTTONDOWN:
+                return  # начинаем игру
+        pygame.display.flip()
+        clock.tick(fps)
+
+
+def end_screen(count_1, record_1):  # Конец игры
+    intro_text = ["                      Конец игры!", "",
+                  f"Ваш счет: {count_1}",
+                  f"Ваш рекорд: {record_1}", "",
+                  "Для начала игры нажмите", "любую клавишу!"]
+    fon = pygame.transform.scale(pygame.image.load('image/background_1.png'), res)
+    screen.blit(fon, (0, 0))
+    text_coord = 50
+    for ss_line in intro_text:
+        font = pygame.font.SysFont('Monotype Corsiva', 70)
+        string_rendered = font.render(ss_line, True, (255, 255, 255))
+        shade_string = font.render(ss_line, True, (189, 134, 240))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(shade_string, intro_rect)
+        intro_rect.y -= 5
+        screen.blit(string_rendered, intro_rect)
+        intro_rect.y += 5
+
+    while True:
+        for end_event in pygame.event.get():
+            if end_event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif end_event.type == pygame.KEYDOWN or \
+                    end_event.type == pygame.MOUSEBUTTONDOWN:
                 return  # начинаем игру
         pygame.display.flip()
         clock.tick(fps)
@@ -205,12 +239,13 @@ while True:
             field = [[0 for _ in range(width)] for i in range(height)]  # Обнуление поля
             count = 0  # Обнуление "падения"
             update_record()
-            score = 0  # Обнуление счета
             for rect in grid:  # Заполнение доски белыми квадратиками
                 pygame.draw.rect(game_screen, (255, 255, 255), rect)
                 screen.blit(game_screen, (10, 10))
                 pygame.display.flip()
                 clock.tick(200)
+            end_screen(score, record)
+            score = 0  # Обнуление счета
 
     pygame.display.flip()
     clock.tick(fps)
