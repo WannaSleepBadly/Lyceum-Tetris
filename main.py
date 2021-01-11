@@ -126,9 +126,18 @@ while True:
             if event.key == pygame.K_RIGHT:
                 change_x = 1  # На 1 клетку вправо
             if event.key == pygame.K_DOWN:
-                limit = 70
-            if event.key == pygame.K_UP:
-                pass
+                limit = 70  # Ускоренное падение
+            if event.key == pygame.K_UP:  # Вращение
+                center = figure[0]  # Центр вращения(отмечен на чертеже)
+                old_figure = deepcopy(figure)
+                for i in range(4):
+                    x = figure[i].y - center.y
+                    y = figure[i].x - center.x
+                    figure[i].x = center.x - x
+                    figure[i].y = center.y + y
+                    if not check_borders():
+                        figure = deepcopy(old_figure)
+                        break
 
     old_figure = deepcopy(figure)  # Копия на случай, если фигура будет выходить за границы
     for i in range(4):  # Непосредственно изменение х координаты каждой плитки фигуры
