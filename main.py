@@ -1,4 +1,4 @@
-# Фон заставки by Ashlinaa, игры - by ryllcat21
+# Фон заставки и экрана конца игры by Ashlinaa, самой игры - by ryllcat21
 import sys
 import pygame
 from copy import deepcopy
@@ -76,9 +76,10 @@ def start_screen():  # Заставка
     intro_text = ["                Добро пожаловать в TETRIS!", "",
                   "Управление",
                   "→ и ← для перемещения фигуры вправо и влево,",
-                  "↑ для вращения и ↓ для ускоренного падения", "", "",
+                  "↑ для вращения и ↓ для ускоренного падения,",
+                  "пробел для паузы и продолжения игры", "",
                   "    Для начала игры нажмите любую клавишу!",
-                  "Для хардкорного уровня сложности нажмите 1!"]
+                  "Для хардкорного уровня сложности нажмите 1"]
     fon = pygame.transform.scale(pygame.image.load('image/background_3.jpg'), res)
     screen.blit(fon, (0, 0))
     text_coord = 50
@@ -114,15 +115,15 @@ def start_screen():  # Заставка
 
 def end_screen(count_1, record_1):  # Конец игры
     global hardcore
-    intro_text = ["                      Конец игры!",
-                  f"Ваш счет: {count_1}",
-                  f"Ваш рекорд: {record_1}", "",
-                  "Для начала новой игры нажмите", "любую клавишу!",
-                  "Для хардкора - 1"]
+    end_text = ["                      Конец игры!",
+                f"Ваш счет: {count_1}",
+                f"Ваш рекорд: {record_1}", "",
+                "Для начала новой игры нажмите", "любую клавишу!",
+                "Для хардкора - 1"]
     fon = pygame.transform.scale(pygame.image.load('image/background_1.png'), res)
     screen.blit(fon, (0, 0))
     text_coord = 50
-    for ss_line in intro_text:
+    for ss_line in end_text:
         font = pygame.font.SysFont('Monotype Corsiva', 70)
         string_rendered = font.render(ss_line, True, (255, 255, 255))
         shade_string = font.render(ss_line, True, (189, 134, 240))
@@ -151,6 +152,41 @@ def end_screen(count_1, record_1):  # Конец игры
         clock.tick(fps)
 
 
+def pause_screen():
+    global running
+    fon = pygame.transform.scale(pygame.image.load('image/background_5.png'), res)
+    screen.blit(fon, (0, 0))
+    text = ["Игра на паузе", "",
+            "Для прожолжения игры",
+            "нажмите пробел!"]
+    text_coord = 50
+    for ss_line in text:
+        font = pygame.font.SysFont('Monotype Corsiva', 100)
+        string_rendered = font.render(ss_line, True, (255, 255, 255))
+        shade_string = font.render(ss_line, True, (189, 134, 240))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(shade_string, intro_rect)
+        intro_rect.y -= 5
+        screen.blit(string_rendered, intro_rect)
+        intro_rect.y += 5
+
+    while True:
+        for end_event in pygame.event.get():
+            if end_event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif end_event.type == pygame.KEYDOWN:
+                if end_event.key == pygame.K_SPACE:
+                    running = True
+                    return  # продолжаем игру
+        pygame.display.flip()
+        clock.tick(fps)
+
+
 def check_borders():  # Проверка границ
     if figure[i].x < 0 or figure[i].x > width - 1 or \
             figure[i].y > height - 1 or field[figure[i].y][figure[i].x] != 0:
@@ -169,6 +205,7 @@ def update_record():
 score, record = 0, 0
 get_record()
 start_screen()
+running = True  # Состояние игры
 while True:
     screen.blit(background, (0, 0))
     screen.blit(game_screen, (10, 10))
@@ -208,28 +245,32 @@ while True:
                     if not check_borders():
                         figure = deepcopy(old_figure)
                         break
+            if event.key == pygame.K_SPACE:
+                running = False
+                pause_screen()
 
-    old_figure = deepcopy(figure)  # Копия на случай, если фигура будет выходить за границы
-    for i in range(4):  # Непосредственно изменение х координаты каждой плитки фигуры
-        figure[i].x += change_x
-        if not check_borders():
-            figure = deepcopy(old_figure)
-            break
-
-    count += count_speed  # Обновление счетчика
-    if count > limit:  # Задаем скорость падения
-        count = 0
-        old_figure = deepcopy(figure)
-        for i in range(4):  # Изменение у коордиаты всех плиток
-            figure[i].y += 1
+    if running:
+        old_figure = deepcopy(figure)  # Копия на случай, если фигура будет выходить за границы
+        for i in range(4):  # Непосредственно изменение х координаты каждой плитки фигуры
+            figure[i].x += change_x
             if not check_borders():
-                for c in range(4):
-                    field[old_figure[c].y][old_figure[c].x] = color  # Отмечаем на поле, что
-                    # данная клетка занята таким цветом
-                limit = 2000
-                figure, color = next_figure, next_color  # Пост сдал
-                next_figure, next_color = deepcopy(choice(figures)), choice(colors)  # Пост принял
+                figure = deepcopy(old_figure)
                 break
+
+        count += count_speed  # Обновление счетчика
+        if count > limit:  # Задаем скорость падения
+            count = 0
+            old_figure = deepcopy(figure)
+            for i in range(4):  # Изменение у коордиаты всех плиток
+                figure[i].y += 1
+                if not check_borders():
+                    for c in range(4):
+                        field[old_figure[c].y][old_figure[c].x] = color  # Отмечаем на поле, что
+                        # данная клетка занята таким цветом
+                    limit = 2000
+                    figure, color = next_figure, next_color  # Пост сдал
+                    next_figure, next_color = deepcopy(choice(figures)), choice(colors)  # Пост принял
+                    break
 
     line = height - 1  # Последняя строка поля
     for i in range(height - 1, -1, -1):  # Проходимся по всему полю
