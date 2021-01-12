@@ -71,6 +71,22 @@ def get_record():
             f.write('0')
 
 
+def text_rendering(text, font, shade_color):
+    text_coord = 50
+    for r_line in text:
+        string_rendered = font.render(r_line, True, (255, 255, 255))
+        shade_string = font.render(r_line, True, shade_color)
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(shade_string, intro_rect)
+        intro_rect.y -= 5
+        screen.blit(string_rendered, intro_rect)
+        intro_rect.y += 5
+
+
 def start_screen():  # Заставка
     global hardcore
     intro_text = ["                Добро пожаловать в TETRIS!", "",
@@ -82,20 +98,8 @@ def start_screen():  # Заставка
                   "Для хардкорного уровня сложности нажмите 1"]
     fon = pygame.transform.scale(pygame.image.load('image/background_3.jpg'), res)
     screen.blit(fon, (0, 0))
-    text_coord = 50
-    for ss_line in intro_text:
-        font = pygame.font.SysFont('Monotype Corsiva', 50)
-        string_rendered = font.render(ss_line, True, (255, 255, 255))
-        shade_string = font.render(ss_line, True, (189, 134, 240))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(shade_string, intro_rect)
-        intro_rect.y -= 5
-        screen.blit(string_rendered, intro_rect)
-        intro_rect.y += 5
+    font = pygame.font.SysFont('Monotype Corsiva', 50)
+    text_rendering(intro_text, font, (189, 134, 240))
 
     while True:
         for ss_event in pygame.event.get():
@@ -122,20 +126,8 @@ def end_screen(count_1, record_1):  # Конец игры
                 "Для хардкора - 1"]
     fon = pygame.transform.scale(pygame.image.load('image/background_1.png'), res)
     screen.blit(fon, (0, 0))
-    text_coord = 50
-    for ss_line in end_text:
-        font = pygame.font.SysFont('Monotype Corsiva', 70)
-        string_rendered = font.render(ss_line, True, (255, 255, 255))
-        shade_string = font.render(ss_line, True, (189, 134, 240))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(shade_string, intro_rect)
-        intro_rect.y -= 5
-        screen.blit(string_rendered, intro_rect)
-        intro_rect.y += 5
+    font = pygame.font.SysFont('Monotype Corsiva', 70)
+    text_rendering(end_text, font, (189, 134, 240))
 
     while True:
         for end_event in pygame.event.get():
@@ -159,20 +151,8 @@ def pause_screen():
     text = ["Игра на паузе", "",
             "Для прожолжения игры",
             "нажмите пробел!"]
-    text_coord = 50
-    for ss_line in text:
-        font = pygame.font.SysFont('Monotype Corsiva', 100)
-        string_rendered = font.render(ss_line, True, (255, 255, 255))
-        shade_string = font.render(ss_line, True, (189, 134, 240))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(shade_string, intro_rect)
-        intro_rect.y -= 5
-        screen.blit(string_rendered, intro_rect)
-        intro_rect.y += 5
+    font = pygame.font.SysFont('Monotype Corsiva', 100)
+    text_rendering(text, font, (189, 134, 240))
 
     while True:
         for end_event in pygame.event.get():
