@@ -1,9 +1,8 @@
-# Фон заставки by Ashlinaa, игры - by ryllcat21, музыка - Wii Shop Channel
+# Фон заставки by Ashlinaa, игры - by ryllcat21
 import sys
 import pygame
 from copy import deepcopy
 from random import choice
-# import os  Нужно для музыки
 
 
 width, height = 10, 15
@@ -16,8 +15,6 @@ game_background = pygame.image.load('image/background_4.jpg')
 background = pygame.image.load('image/background_2.jpg')
 pygame.init()
 pygame.font.init()
-#  pygame.mixer.music.load('Wii-Shop-Channel.ogg')  Не работает пока что, F
-#  pygame.mixer.music.play(loops=-1)
 #  Надписи
 pygame.display.set_caption('Пастельный Тетрис')
 fancy_font = pygame.font.SysFont('Monotype Corsiva', 120)
@@ -32,6 +29,7 @@ sh_title = fancy_font.render('TETRIS', False, shade_color)
 sh_record_text = small_fancy_font.render('Record:', False, shade_color)
 sh_score_text = small_fancy_font.render('Score:', False, shade_color)
 sh_next_figure = smaller_fancy_font.render('Next figure: ', False, shade_color)
+hardcore = False  # Уровень сложности
 
 screen = pygame.display.set_mode(res)
 game_screen = pygame.Surface(game_resolution)
@@ -74,11 +72,13 @@ def get_record():
 
 
 def start_screen():  # Заставка
+    global hardcore
     intro_text = ["                Добро пожаловать в TETRIS!", "",
                   "Управление",
                   "→ и ← для перемещения фигуры вправо и влево,",
                   "↑ для вращения и ↓ для ускоренного падения", "", "",
-                  "    Для начала игры нажмите любую клавишу!"]
+                  "    Для начала игры нажмите любую клавишу!",
+                  "Для хардкорного уровня сложности нажмите 1!"]
     fon = pygame.transform.scale(pygame.image.load('image/background_3.jpg'), res)
     screen.blit(fon, (0, 0))
     text_coord = 50
@@ -101,18 +101,24 @@ def start_screen():  # Заставка
             if ss_event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif ss_event.type == pygame.KEYDOWN or \
-                    ss_event.type == pygame.MOUSEBUTTONDOWN:
+            elif ss_event.type == pygame.KEYDOWN:
+                if ss_event.key == pygame.K_1:
+                    hardcore = True
                 return  # начинаем игру
+            elif ss_event.type == pygame.MOUSEBUTTONDOWN:
+                return
+
         pygame.display.flip()
         clock.tick(fps)
 
 
 def end_screen(count_1, record_1):  # Конец игры
-    intro_text = ["                      Конец игры!", "",
+    global hardcore
+    intro_text = ["                      Конец игры!",
                   f"Ваш счет: {count_1}",
                   f"Ваш рекорд: {record_1}", "",
-                  "Для начала новой игры нажмите", "любую клавишу!"]
+                  "Для начала новой игры нажмите", "любую клавишу!",
+                  "Для хардкора - 1"]
     fon = pygame.transform.scale(pygame.image.load('image/background_1.png'), res)
     screen.blit(fon, (0, 0))
     text_coord = 50
@@ -135,9 +141,12 @@ def end_screen(count_1, record_1):  # Конец игры
             if end_event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif end_event.type == pygame.KEYDOWN or \
-                    end_event.type == pygame.MOUSEBUTTONDOWN:
+            elif end_event.type == pygame.KEYDOWN:
+                if end_event.key == pygame.K_1:
+                    hardcore = True
                 return  # начинаем игру
+            elif end_event.type == pygame.MOUSEBUTTONDOWN:
+                return
         pygame.display.flip()
         clock.tick(fps)
 
@@ -167,11 +176,15 @@ while True:
     screen.blit(sh_title, (515, 10))
     screen.blit(sh_score_text, (510, 415))
     screen.blit(sh_record_text, (510, 540))
-    screen.blit(sh_next_figure, (510, 170))
     screen.blit(title, (520, 10))
     screen.blit(show_score_text, (515, 415))
     screen.blit(show_record_text, (515, 540))
-    screen.blit(show_next_figure, (515, 170))
+    if not hardcore:  # В хардкоре не будет показываться следующая фигура
+        screen.blit(sh_next_figure, (510, 170))
+        screen.blit(show_next_figure, (515, 170))
+        count_speed = 60
+    else:
+        count_speed = 120  # И будет увеличена скорость падения фигуры
 
     change_x = 0  # Изменение х координаты фигуры на столько-то клеток
     for event in pygame.event.get():
@@ -254,16 +267,18 @@ while True:
     screen.blit(sh_record, (785, 545))
     screen.blit(show_record, (785, 540))
 
-    for i in range(4):  # Отрисовка следующей фигуры
-        figure_rect.x = next_figure[i].x * tile + 450
-        figure_rect.y = next_figure[i].y * tile + 300
-        pygame.draw.rect(screen, next_color, figure_rect)
+    if not hardcore:
+        for i in range(4):  # Отрисовка следующей фигуры
+            figure_rect.x = next_figure[i].x * tile + 450
+            figure_rect.y = next_figure[i].y * tile + 300
+            pygame.draw.rect(screen, next_color, figure_rect)
 
     for i in range(width):  # Конец игры
         if field[0][i] != 0:
             field = [[0 for _ in range(width)] for i in range(height)]  # Обнуление поля
             count = 0  # Обнуление "падения"
             update_record()
+            hardcore = False
             for rect in grid:  # Заполнение доски белыми квадратиками
                 pygame.draw.rect(game_screen, (255, 255, 255), rect)
                 screen.blit(game_screen, (10, 10))
